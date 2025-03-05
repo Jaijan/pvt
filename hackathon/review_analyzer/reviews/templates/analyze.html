@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Result</title>
+</head>
+<body>
+    <h1>Review Analysis Result</h1>
+    <p><strong>Product URL:</strong> {{ product_url }}</p>
+
+    {% if error %}
+        <p style="color: red;">⚠️ {{ error }}</p>
+    {% else %}
+        <h2>Top Reviews:</h2>
+        <ul>
+            {% for review in reviews %}
+                <li>{{ review }}</li>
+            {% empty %}
+                <li>No reviews found.</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

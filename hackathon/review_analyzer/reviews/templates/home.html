@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Analyzer</title>
+</head>
+<body>
+    <h1>Welcome to the Review Analyzer</h1>
+    <p>Enter an Amazon or Flipkart product URL to analyze reviews.</p>
+
+    <form action="{% url 'analyze_reviews' %}" method="POST">
+        {% csrf_token %}
+        <input type="url" name="product_url" placeholder="Enter product URL here" required>
+        <button type="submit">Analyze</button>
+    </form>
+</body>
+</html>
