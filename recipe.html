@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Recipe Generator</title>
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #388E3C;
+            --primary-light: #C8E6C9;
+            --accent: #FF9800;
+            --text: #333;
+            --text-light: #666;
+            --background: #f9f9f9;
+            --card: #fff;
+            --border: #ddd;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        h1 {
+            color: var(--primary-dark);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+
+        main {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            flex: 1;
+        }
+
+        @media (min-width: 768px) {
+            main {
+                flex-direction: row;
+            }
+        }
+
+        .input-section {
+            flex: 1;
+            background-color: var(--card);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+
+        .recipe-section {
+            flex: 1;
+            background-color: var(--card);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            position: relative;
+        }
+
+        h2 {
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: #fff;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 6px 12px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .tag span {
+            margin-right: 5px;
+        }
+
+        .tag button {
+            background: none;
+            border: none;
+            color: var(--primary-dark);
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .button:disabled {
+            background-color: var(--text-light);
+            cursor: not-allowed;
+        }
+
+        .recipe-content {
+            line-height: 1.8;
+        }
+
+        .recipe-content h3 {
+            color: var(--primary-dark);
+            margin: 20px 0 10px 0;
+            border-bottom: 1px solid var(--primary-light);
+            padding-bottom: 5px;
+        }
+
+        .recipe-content ul, .recipe-content ol {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .recipe-content p {
+            margin-bottom: 10px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--primary-light);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #f44336;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 0;
+            color: var(--text-light);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .pill-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .pill {
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: #eee;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .pill:hover {
+            background-color: #ddd;
+        }
+
+        .pill.selected {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+        }
+
+        .api-key-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .modal-title {
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+        }
+
+        .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            border: none;
+            background: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        #debugInfo {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Personalized Recipe Generator</h1>
+            <p class="subtitle">Create custom recipes based on your ingredients and preferences</p>
+        </header>
+        
+        <main>
+            <section class="input-section">
+                <h2>Your Ingredients & Preferences</h2>
+                
+                <div class="form-group">
+                    <label for="ingredients">Ingredients You Have</label>
+                    <textarea id="ingredients" placeholder="Enter ingredients separated by commas (e.g., chicken, rice, spinach, olive oil)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Dietary Restrictions</label>
+                    <div class="pill-container" id="dietaryRestrictions">
+                        <div class="pill selected" data-value="None">None</div>
+                        <div class="pill" data-value="Vegetarian">Vegetarian</div>
+                        <div class="pill" data-value="Vegan">Vegan</div>
+                        <div class="pill" data-value="Gluten-Free">Gluten-Free</div>
+                        <div class="pill" data-value="Dairy-Free">Dairy-Free</div>
+                        <div class="pill" data-value="Keto">Keto</div>
+                        <div class="pill" data-value="Paleo">Paleo</div>
+                        <div class="pill" data-value="Low-Carb">Low-Carb</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Cuisine Type</label>
+                    <div class="pill-container" id="cuisineType">
+                        <div class="pill selected" data-value="Any">Any</div>
+                        <div class="pill" data-value="Italian">Italian</div>
+                        <div class="pill" data-value="Mexican">Mexican</div>
+                        <div class="pill" data-value="Chinese">Chinese</div>
+                        <div class="pill" data-value="Indian">Indian</div>
+                        <div class="pill" data-value="Thai">Thai</div>
+                        <div class="pill" data-value="Japanese">Japanese</div>
+                        <div class="pill" data-value="Mediterranean">Mediterranean</div>
+                        <div class="pill" data-value="American">American</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="mealType">Meal Type</label>
+                    <select id="mealType">
+                        <option value="Any">Any</option>
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Lunch">Lunch</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Dessert">Dessert</option>
+                        <option value="Snack">Snack</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="cookingTime">Maximum Cooking Time (minutes)</label>
+                    <input type="number" id="cookingTime" min="5" max="180" value="30">
+                </div>
+                
+                <div class="form-group">
+                    <label for="skillLevel">Cooking Skill Level</label>
+                    <select id="skillLevel">
+                        <option value="Any">Any</option>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
+                
+                <button id="generateButton" class="button">
+                    <span>Generate Recipe</span>
+                </button>
+                
+                <div id="apiKeyError" class="error"></div>
+
+                <div id="debugInfo"></div>
+            </section>
+            
+            <section class="recipe-section">
+                <h2>Your Personalized Recipe</h2>
+                <div id="recipeContent" class="recipe-content">
+                    <p>Your recipe will appear here after generation. Enter your ingredients and preferences, then click "Generate Recipe".</p>
+                </div>
+                <div id="loading" class="loading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p>Creating your personalized recipe...</p>
+                </div>
+            </section>
+        </main>
+        
+        <footer>
+            <p>Powered by <a href="#" id="apiKeyLink">Claude API</a> | Created for recipe enthusiasts</p>
+        </footer>
+    </div>
+    
+    <div id="apiKeyModal" class="api-key-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Set Your Claude API Key</h2>
+            <p>To generate recipes, you need to provide your Claude API key. Your key is stored locally and never sent to our servers.</p>
+            
+            <div class="form-group">
+                <label for="apiKey">Claude API Key</label>
+                <input type="text" id="apiKey" placeholder="Enter your API key (starts with 'sk-')">
+            </div>
+            
+            <button id="saveApiKey" class="button">Save API Key</button>
+            <p>Don't have an API key? <a href="https://console.anthropic.com/" target="_blank">Get one from Anthropic</a></p>
+            
+            <button class="close-button" id="closeModal">&times;</button>
+        </div>
+    </div>
+
+    <script>
+        // Wait until DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM fully loaded");
+            
+            // Debug function to show events
+            function debug(message) {
+                const debugElement = document.getElementById('debugInfo');
+                const timestamp = new Date().toLocaleTimeString();
+                debugElement.innerHTML += `[${timestamp}] ${message}<br>`;
+                console.log(message);
+            }
+            
+            // Elements
+            const apiKeyModal = document.getElementById('apiKeyModal');
+            const apiKeyLink = document.getElementById('apiKeyLink');
+            const closeModal = document.getElementById('closeModal');
+            const saveApiKey = document.getElementById('saveApiKey');
+            const apiKeyInput = document.getElementById('apiKey');
+            const apiKeyError = document.getElementById('apiKeyError');
+            const generateButton = document.getElementById('generateButton');
+            const ingredientsInput = document.getElementById('ingredients');
+            const mealTypeSelect = document.getElementById('mealType');
+            const cookingTimeInput = document.getElementById('cookingTime');
+            const skillLevelSelect = document.getElementById('skillLevel');
+            const recipeContent = document.getElementById('recipeContent');
+            const loadingElement = document.getElementById('loading');
+            
+            debug("All elements selected");
+            
+            // API Key Management
+            const apiKey = localStorage.getItem('claude_api_key');
+            
+            // Check if API key is stored
+            if (apiKey) {
+                apiKeyInput.value = apiKey;
+                debug("API key loaded from storage");
+            }
+            
+            // Show API key modal
+            apiKeyLink.onclick = function(e) {
+                e.preventDefault();
+                apiKeyModal.style.display = 'flex';
+                debug("API key modal opened");
+            };
+            
+            // Close API key modal
+            closeModal.onclick = function() {
+                apiKeyModal.style.display = 'none';
+                debug("API key modal closed");
+            };
+            
+            // Save API key
+            saveApiKey.onclick = function() {
+                const key = apiKeyInput.value.trim();
+                debug("Save API key clicked");
+                
+                if (key && key.startsWith('sk-')) {
+                    localStorage.setItem('claude_api_key', key);
+                    apiKeyModal.style.display = 'none';
+                    apiKeyError.textContent = '';
+                    debug("API key saved");
+                } else {
+                    apiKeyError.textContent = 'Please enter a valid Claude API key.';
+                    debug("Invalid API key");
+                }
+            };
+            
+            // Click outside to close modal
+            window.onclick = function(e) {
+                if (e.target === apiKeyModal) {
+                    apiKeyModal.style.display = 'none';
+                    debug("Clicked outside modal - closing");
+                }
+            };
+            
+            // Pill selection
+            const pillContainers = document.querySelectorAll('.pill-container');
+            
+            pillContainers.forEach(container => {
+                const pills = container.querySelectorAll('.pill');
+                
+                pills.forEach(pill => {
+                    pill.onclick = function() {
+                        debug(`Pill clicked: ${pill.dataset.value} in ${container.id}`);
+                        
+                        if (container.id === 'dietaryRestrictions') {
+                            // Multiple selection allowed
+                            if (pill.dataset.value === 'None') {
+                                // Clear all selections if "None" is clicked
+                                pills.forEach(p => p.classList.remove('selected'));
+                                pill.classList.add('selected');
+                                debug("Selected 'None' - cleared other selections");
+                            } else {
+                                // Deselect "None" if any other option is clicked
+                                const noneOption = container.querySelector('[data-value="None"]');
+                                noneOption.classList.remove('selected');
+                                pill.classList.toggle('selected');
+                                debug(`Toggled selection: ${pill.dataset.value}`);
+                            }
+                        } else {
+                            // Single selection
+                            pills.forEach(p => p.classList.remove('selected'));
+                            pill.classList.add('selected');
+                            debug(`Selected: ${pill.dataset.value}`);
+                        }
+                    };
+                });
+            });
+            
+            // Recipe Generation
+            generateButton.onclick = async function() {
+                debug("Generate button clicked");
+                
+                // Check if API key is set
+                const apiKey = localStorage.getItem('claude_api_key');
+                if (!apiKey) {
+                    apiKeyModal.style.display = 'flex';
+                    debug("No API key - opening modal");
+                    return;
+                }
+                
+                // Get ingredients
+                const ingredients = ingredientsInput.value.trim();
+                if (!ingredients) {
+                    apiKeyError.textContent = 'Please enter at least one ingredient.';
+                    debug("No ingredients entered");
+                    return;
+                }
+                
+                // Get dietary restrictions
+                const dietaryRestrictions = Array.from(
+                    document.querySelectorAll('#dietaryRestrictions .pill.selected')
+                ).map(pill => pill.dataset.value);
+                debug(`Selected dietary restrictions: ${dietaryRestrictions.join(', ')}`);
+                
+                // Get cuisine type
+                const cuisineType = document.querySelector('#cuisineType .pill.selected').dataset.value;
+                debug(`Selected cuisine: ${cuisineType}`);
+                
+                // Get meal type
+                const mealType = mealTypeSelect.value;
+                debug(`Selected meal type: ${mealType}`);
+                
+                // Get cooking time
+                const cookingTime = cookingTimeInput.value;
+                debug(`Selected cooking time: ${cookingTime}`);
+                
+                // Get skill level
+                const skillLevel = skillLevelSelect.value;
+                debug(`Selected skill level: ${skillLevel}`);
+                
+                // Show loading state
+                loadingElement.style.display = 'flex';
+                apiKeyError.textContent = '';
+                debug("Loading state shown");
+                
+                try {
+                    // Format the prompt for Claude API
+                    const prompt = `You are a professional chef and recipe developer. Create a personalized recipe based on the following:
+
+Ingredients: ${ingredients}
+Dietary Restrictions: ${dietaryRestrictions.join(', ')}
+Cuisine: ${cuisineType}
+Meal Type: ${mealType}
+Maximum Cooking Time: ${cookingTime} minutes
+Skill Level: ${skillLevel}
+
+Please format the recipe with the following sections:
+1. Recipe Name (be creative and appetizing)
+2. Brief description and background
+3. Prep Time, Cook Time, and Total Time
+4. Servings
+5. Ingredients (with measurements)
+6. Step-by-step instructions
+7. Nutritional information (estimate)
+8. Tips and variations
+
+Use markdown formatting for the recipe.`;
+
+                    debug("Prompt prepared, calling API");
+                    
+                    // Call Claude API
+                    const response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-5-sonnet-20240620',
+                            max_tokens: 4000,
+                            messages: [
+                                { role: 'user', content: prompt }
+                            ]
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        debug(`API error: ${JSON.stringify(errorData)}`);
+                        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                    }
+                    
+                    debug("API response received");
+                    const data = await response.json();
+                    const recipe = data.content[0].text;
+                    
+                    // Display recipe (convert markdown to HTML)
+                    recipeContent.innerHTML = convertMarkdownToHTML(recipe);
+                    debug("Recipe displayed");
+                } catch (error) {
+                    console.error('Error generating recipe:', error);
+                    debug(`Error: ${error.message}`);
+                    recipeContent.innerHTML = `<p class="error">Sorry, there was an error generating your recipe. Please check your API key and try again.</p>`;
+                    apiKeyError.textContent = 'Error connecting to Claude API. Check your API key.';
+                } finally {
+                    // Hide loading state
+                    loadingElement.style.display = 'none';
+                    debug("Loading state hidden");
+                }
+            };
+            
+            // Simple Markdown to HTML converter
+            function convertMarkdownToHTML(markdown) {
+                debug("Converting markdown to HTML");
+                
+                // Handle headers
+                markdown = markdown.replace(/^# (.*$)/gm, '<h2>$1</h2>');
+                markdown = markdown.replace(/^## (.*$)/gm, '<h3>$1</h3>');
+                markdown = markdown.replace(/^### (.*$)/gm, '<h4>$1</h4>');
+                
+                // Handle bold
+                markdown = markdown.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+                // Handle italic
+                markdown = markdown.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                
+                // Handle unordered lists
+                let listMatch = markdown.match(/^\s*\* (.*$)/gm);
+                if (listMatch) {
+                    listMatch.forEach(item => {
+                        markdown = markdown.replace(item, '<li>' + item.replace(/^\s*\* /, '') + '</li>');
+                    });
+                    
+                    // Find continuous list items and wrap them in <ul>
+                    markdown = markdown.replace(/(<li>.*?<\/li>(\s*\n\s*)?)+/gs, function(match) {
+                        return '<ul>' + match.replace(/\n/g, '') + '</ul>';
+                    });
+                }
+                
+                // Handle ordered lists
+                listMatch = markdown.match(/^\s*\d+\. (.*$)/gm);
+                if (listMatch) {
+                    listMatch.forEach(item => {
+                        markdown = markdown.replace(item, '<li>' + item.replace(/^\s*\d+\. /, '') + '</li>');
+                    });
+                    
+                    // Find continuous list items and wrap them in <ol>
+                    markdown = markdown.replace(/(<li>.*?<\/li>(\s*\n\s*)?)+/gs, function(match) {
+                        if (!match.includes('<ul>') && !match.includes('<ol>')) {
+                            return '<ol>' + match.replace(/\n/g, '') + '</ol>';
+                        }
+                        return match;
+                    });
+                }
+                
+                // Handle paragraphs (lines that aren't already wrapped in HTML tags)
+                markdown = markdown.replace(/^(?!<[a-z0-9])[^\n].*$/gm, '<p>$&</p>');
+                
+                // Fix empty paragraphs
+                markdown = markdown.replace(/<p><\/p>/g, '');
+                
+                // Replace newlines with <br> in paragraphs
+                markdown = markdown.replace(/<p>(.*?)<\/p>/gs, function(match, p1) {
+                    return '<p>' + p1.replace(/\n/g, '<br>') + '</p>';
+                });
+                
+                debug("Markdown conversion complete");
+                return markdown;
+            }
+            
+            debug("All event handlers set up");
+        });
+    </script>
+</body>
+</html>
